@@ -160,12 +160,16 @@ class DockerManager:
         cmd: str,
         env: Optional[dict[str, str]] = None,
     ) -> subprocess.CompletedProcess:
-        """Start a background process inside the container."""
+        """Start a background process inside the container via a temp script."""
+        # Write the command to a script to avoid nested quoting issues
+        script = f"#!/bin/bash\n{cmd}\n"
+        escaped_script = script.replace("'", "'\\''")
+        self.exec_cmd(name, f"echo '{escaped_script}' > /tmp/porter_run.sh && chmod +x /tmp/porter_run.sh", timeout=10)
+
         env_flags = ""
         if env:
             env_flags = " ".join(f"-e {k}={shlex.quote(v)}" for k, v in env.items())
-        bg_cmd = f"nohup bash -c {shlex.quote(cmd)} > /tmp/sglang_server.log 2>&1 &"
-        full = f"docker exec -d {env_flags} {name} bash -lc {shlex.quote(bg_cmd)}"
+        full = f"docker exec -d {env_flags} {name} bash -c 'nohup /tmp/porter_run.sh > /tmp/sglang_server.log 2>&1'"
         return self._run(full, timeout=30, check=False)
 
     def get_logs(self, name: str, tail: int = 200) -> str:
