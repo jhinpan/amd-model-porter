@@ -78,6 +78,13 @@ issues:
     description: FP8 quantization incompatible with MoE on ROCm
     models_affected: [MoE]
 
+  - id: fp8_block_size_mismatch
+    pattern: "not divisible by weight quantization block|block_n.*128|output_size.*not divisible"
+    severity: high
+    fix: disable_fp8
+    description: MoE expert FFN dimensions not aligned to FP8 block size (128)
+    models_affected: [MoE]
+
   - id: fused_moe_page_fault
     pattern: "Write access to a read-only page|fused_moe.*fault"
     severity: high
