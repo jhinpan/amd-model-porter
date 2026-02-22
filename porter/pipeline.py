@@ -238,8 +238,15 @@ class Pipeline:
                 self._emit("stage2", "No known pattern matched — escalating to agent", level="warning")
                 break
 
-            # Apply highest-severity fix
-            diag = diagnoses[0]
+            # Apply highest-severity fix (skip already-tried fixes)
+            applied_ids = {f.split(":")[0] for f in attempted_fixes}
+            new_diags = [d for d in diagnoses if d.issue_id not in applied_ids]
+
+            if not new_diags:
+                self._emit("stage2", "All matched patterns already tried — escalating to agent", level="warning")
+                break
+
+            diag = new_diags[0]
             self._emit("stage2", f"Diagnosed: [{diag.severity}] {diag.issue_id}: {diag.description}")
 
             should_escalate = config.env_overrides.get("__PORTER_ESCALATE_TO_AGENT")

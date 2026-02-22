@@ -145,6 +145,13 @@ issues:
     description: Model type not in stable transformers, install from source
     models_affected: [new_models]
 
+  - id: forward_metadata_unpack
+    pattern: "cannot unpack non-iterable ForwardMetadata"
+    severity: high
+    fix: escalate_to_agent
+    description: SGLang ForwardMetadata API mismatch — model needs newer SGLang version or code fix
+    models_affected: [NSA]
+
   - id: weight_shape_mismatch
     pattern: "size mismatch|shape.*does not match"
     severity: high
