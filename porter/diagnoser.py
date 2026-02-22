@@ -38,7 +38,7 @@ class ErrorDiagnoser:
     def __init__(self):
         self.issues = self._load_issues()
         self._compiled: list[tuple[re.Pattern, dict]] = [
-            (re.compile(iss["pattern"], re.IGNORECASE | re.DOTALL), iss)
+            (re.compile(iss["pattern"], re.IGNORECASE | re.MULTILINE), iss)
             for iss in self.issues
         ]
 

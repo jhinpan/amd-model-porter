@@ -64,7 +64,7 @@ issues:
     models_affected: [all]
 
   - id: aiter_workspace_oom
-    pattern: "AITER.*workspace|workspace.*buffer.*OOM"
+    pattern: "AITER.*workspace.*OOM|workspace buffer.*OOM|aiter.*out of memory"
     severity: medium
     fix: lower_mem_fraction
     description: "AITER workspace buffer OOM with many experts (Issue #18262)"
