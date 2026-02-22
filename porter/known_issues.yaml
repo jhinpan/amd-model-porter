@@ -124,7 +124,7 @@ issues:
 
   # --- Tokenizer / model loading ---
   - id: transformers_version
-    pattern: "KeyError.*model_type|model_type.*not found"
+    pattern: "KeyError.*model_type|model_type.*not found|does not recognize this architecture|model type.*but Transformers"
     severity: medium
     fix: upgrade_transformers
     description: Model type not in stable transformers, install from source

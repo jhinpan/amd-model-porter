@@ -193,12 +193,14 @@ class DockerManager:
 
         shell_cmd = config.build_shell_cmd()
         log.info("Launching SGLang: %s", config.summary())
-        # build_shell_cmd() already includes env vars inline, so don't pass env separately
         self.exec_background(name, shell_cmd)
-        return self.wait_for_health(config.port)
+        return self.wait_for_health(config.port, container_name=name)
 
     def wait_for_health(
-        self, port: int = SGLANG_DEFAULT_PORT, timeout: int = SGLANG_HEALTH_TIMEOUT,
+        self,
+        port: int = SGLANG_DEFAULT_PORT,
+        timeout: int = SGLANG_HEALTH_TIMEOUT,
+        container_name: str = "",
     ) -> bool:
         """Poll the SGLang health endpoint until ready or timeout."""
         url = f"http://localhost:{port}{SGLANG_HEALTH_ENDPOINT}"
@@ -214,6 +216,18 @@ class DockerManager:
                     return True
             except requests.ConnectionError:
                 pass
+
+            # Early exit: check if server process crashed
+            if container_name:
+                check = self.exec_cmd(
+                    container_name,
+                    "pgrep -f 'sglang.launch_server' > /dev/null && echo ALIVE || echo DEAD",
+                    timeout=5,
+                )
+                if "DEAD" in check.stdout:
+                    log.error("SGLang server process is not running — early exit")
+                    return False
+
             time.sleep(interval)
             remaining = int(deadline - time.time())
             if remaining > 0 and remaining % 30 == 0:
