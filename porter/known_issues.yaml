@@ -1,0 +1,138 @@
+# AMD Model Porter - Known Issue Catalog
+# Each entry: pattern (regex matched against stderr/logs), severity, fix action, description.
+# Fix actions are handled programmatically in diagnoser.py.
+
+issues:
+
+  # --- Attention backend issues ---
+  - id: ck_gemm_unsupported
+    pattern: "device_gemm does not support"
+    severity: high
+    fix: fallback_triton_backend
+    description: CK codegen lacks tile configuration for this head dimension
+    models_affected: [MoE, MLA]
+
+  - id: lds_overflow
+    pattern: "OutOfResources.*shared memory"
+    severity: high
+    fix: fallback_triton_backend
+    description: LDS (shared memory) overflow in CK kernel
+    models_affected: [all]
+
+  - id: aiter_max_split
+    pattern: "AttributeError.*max_split"
+    severity: medium
+    fix: fallback_triton_backend
+    description: AITER missing max_split_per_batch attribute
+    models_affected: [hybrid_attention]
+
+  - id: aiter_not_installed
+    pattern: "ImportError.*aiter"
+    severity: medium
+    fix: install_aiter
+    description: AITER package not installed in container
+    models_affected: [all]
+
+  - id: batch_prefill_invalid
+    pattern: "invalid argument.*batch_prefill|RuntimeError.*batch_prefill"
+    severity: high
+    fix: fallback_triton_backend
+    description: CK batch_prefill codegen gap for non-standard head dimensions
+    models_affected: [MLA]
+
+  # --- CUDA graph issues ---
+  - id: cuda_graph_segfault
+    pattern: "Segmentation fault|SIGSEGV"
+    severity: high
+    fix: disable_cuda_graph
+    description: CUDA graph capture crash, common with MoE models on ROCm
+    models_affected: [MoE]
+
+  - id: fp8_cuda_graph_garbage
+    pattern: "FP8.*CUDA graph|cuda_graph.*FP8"
+    severity: high
+    fix: disable_cuda_graph_or_fp8
+    description: "FP8 + CUDA graph produces garbage on MI355X (Issue #18002)"
+    models_affected: [all]
+
+  # --- Memory issues ---
+  - id: oom_general
+    pattern: "OutOfMemoryError|out of memory|HIP out of memory"
+    severity: high
+    fix: reduce_memory
+    description: GPU OOM - reduce batch size or increase parallelism
+    models_affected: [all]
+
+  - id: aiter_workspace_oom
+    pattern: "AITER.*workspace|workspace.*buffer.*OOM"
+    severity: medium
+    fix: lower_mem_fraction
+    description: "AITER workspace buffer OOM with many experts (Issue #18262)"
+    models_affected: [MoE]
+
+  # --- MoE-specific ---
+  - id: moe_fp8_garbage
+    pattern: "ValueError.*FP8.*MoE|MoE.*w8a8.*garbage"
+    severity: high
+    fix: disable_fp8
+    description: FP8 quantization incompatible with MoE on ROCm
+    models_affected: [MoE]
+
+  - id: fused_moe_page_fault
+    pattern: "Write access to a read-only page|fused_moe.*fault"
+    severity: high
+    fix: disable_cuda_graph
+    description: GPU memory access fault in fused_moe kernel
+    models_affected: [MoE]
+
+  # --- Communication issues ---
+  - id: nccl_timeout
+    pattern: "NCCL.*timeout|NCCL.*error"
+    severity: high
+    fix: configure_nccl
+    description: Multi-GPU NCCL communication failure
+    models_affected: [all]
+
+  # --- Import / guard issues ---
+  - id: cutlass_import
+    pattern: "ModuleNotFoundError.*cutlass|ImportError.*cutlass"
+    severity: high
+    fix: verify_cuda_guard
+    description: CUTLASS import on ROCm - missing is_cuda() guard
+    models_affected: [hybrid_attention]
+
+  - id: causal_conv1d_import
+    pattern: "AttributeError.*causal_conv1d|ImportError.*causal_conv1d"
+    severity: high
+    fix: verify_triton_fallback
+    description: causal_conv1d not available on ROCm, needs Triton fallback
+    models_affected: [DeltaNet, hybrid_attention]
+
+  - id: cute_dsl_hip
+    pattern: "CuTe.*DSL.*HIP|cute_dsl.*error"
+    severity: high
+    fix: verify_cuda_guard
+    description: CuTe DSL GDN not compatible with HIP
+    models_affected: [hybrid_attention]
+
+  - id: v_head_dim_crash
+    pattern: "v_head_dim|get_value_buffer.*DeltaNet|layer 0.*not full attn"
+    severity: high
+    fix: fix_v_head_dim_init
+    description: v_head_dim init crash when layer 0 is not standard attention
+    models_affected: [DeltaNet, hybrid_attention]
+
+  # --- Tokenizer / model loading ---
+  - id: transformers_version
+    pattern: "KeyError.*model_type|model_type.*not found"
+    severity: medium
+    fix: upgrade_transformers
+    description: Model type not in stable transformers, install from source
+    models_affected: [new_models]
+
+  - id: weight_shape_mismatch
+    pattern: "size mismatch|shape.*does not match"
+    severity: high
+    fix: escalate_to_agent
+    description: Weight loading shape mismatch - needs manual investigation
+    models_affected: [all]
