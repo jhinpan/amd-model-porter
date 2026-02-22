@@ -41,11 +41,14 @@ class ServerConfig:
 
     def build_env(self) -> dict[str, str]:
         """Return the full environment variable dict for the server process."""
+        from porter.config import MODEL_WEIGHTS_CONTAINER_DIR
+
         env = dict(AMD_ENV_VARS)
         if self.gpu_ids is not None:
             env["HIP_VISIBLE_DEVICES"] = ",".join(str(g) for g in self.gpu_ids)
         else:
             env["HIP_VISIBLE_DEVICES"] = ",".join(str(i) for i in range(self.tp))
+        env["HF_HUB_CACHE"] = f"{MODEL_WEIGHTS_CONTAINER_DIR}/hub"
         env.update(self.env_overrides)
         return env
 

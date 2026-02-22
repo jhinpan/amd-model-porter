@@ -31,6 +31,7 @@ AMD_ENV_VARS: dict[str, str] = {
     "VLLM_FP8_PADDING": "1",
     "VLLM_FP8_ACT_PADDING": "1",
     "VLLM_FP8_WEIGHT_PADDING": "1",
+    "HF_HUB_OFFLINE": "1",
 }
 
 # ---------------------------------------------------------------------------
@@ -73,7 +74,7 @@ DOCKER_RUN_DEFAULTS: dict[str, str | list[str]] = {
 # ---------------------------------------------------------------------------
 SGLANG_DEFAULT_PORT = 30000
 SGLANG_HEALTH_ENDPOINT = "/health"
-SGLANG_HEALTH_TIMEOUT = 600  # 10 min — large models (700B+) need time to load
+SGLANG_HEALTH_TIMEOUT = 1800  # 30 min — 700B+ models need significant loading time
 SGLANG_MAX_RETRIES = 5
 
 # ---------------------------------------------------------------------------
