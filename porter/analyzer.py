@@ -278,6 +278,7 @@ class ModelAnalyzer:
                     "MLA" in affected and p.has_mla,
                     "DeltaNet" in affected and p.has_deltanet,
                     "hybrid_attention" in affected and p.has_hybrid_attention,
+                    "NSA" in affected and p.has_nsa,
                     "new_models" in affected,
                 ])
             if match:
@@ -310,6 +311,11 @@ class ModelAnalyzer:
         # Hybrid attention models need mamba cache size
         if p.has_deltanet or p.has_hybrid_attention:
             config.max_mamba_cache_size = 64
+
+        # NSA/DSA models need explicit tilelang backends on ROCm
+        if p.has_nsa:
+            config.nsa_prefill_backend = "tilelang"
+            config.nsa_decode_backend = "tilelang"
 
         # Lower mem fraction for very large models
         if p.weight_size_gb > 700:

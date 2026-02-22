@@ -153,8 +153,8 @@ The server log is at /tmp/sglang_server.log.
             f"#!/bin/bash\n"
             f"export ANTHROPIC_BASE_URL={ANTHROPIC_BASE_URL}\n"
             f"export ANTHROPIC_API_KEY=not-used\n"
-            f"export CLAUDE_MODEL={CLAUDE_MODEL}\n"
-            f"claude --dangerously-skip-permissions -p \"$(cat /tmp/porter_agent_prompt.txt)\"\n"
+            f"claude --model {CLAUDE_MODEL} --dangerously-skip-permissions"
+            f" -p \"$(cat /tmp/porter_agent_prompt.txt)\"\n"
         )
         agent_script_escaped = agent_script.replace("'", "'\\''")
         self.docker.exec_cmd(

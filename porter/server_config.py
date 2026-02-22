@@ -19,6 +19,8 @@ class ServerConfig:
     dp: Optional[int] = None
     attention_backend: str = "triton"
     decode_attention_backend: Optional[str] = None
+    nsa_prefill_backend: Optional[str] = None
+    nsa_decode_backend: Optional[str] = None
     trust_remote_code: bool = True
     disable_cuda_graph: bool = False
     cuda_graph_max_bs: Optional[int] = None
@@ -73,6 +75,10 @@ class ServerConfig:
             cmd.append("--enable-dp-lm-head")
         if self.decode_attention_backend:
             cmd.extend(["--decode-attention-backend", self.decode_attention_backend])
+        if self.nsa_prefill_backend:
+            cmd.extend(["--nsa-prefill-backend", self.nsa_prefill_backend])
+        if self.nsa_decode_backend:
+            cmd.extend(["--nsa-decode-backend", self.nsa_decode_backend])
         if self.disable_cuda_graph:
             cmd.append("--disable-cuda-graph")
         if self.cuda_graph_max_bs is not None:

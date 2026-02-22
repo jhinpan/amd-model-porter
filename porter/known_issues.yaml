@@ -92,6 +92,14 @@ issues:
     description: GPU memory access fault in fused_moe kernel
     models_affected: [MoE]
 
+  # --- NSA/DSA attention issues ---
+  - id: nsa_backend_hang
+    pattern: "init_device_graphs.*hang|nsa.*tilelang.*error|NSA.*backend.*not found"
+    severity: high
+    fix: set_nsa_tilelang
+    description: NSA/DSA attention needs explicit tilelang backends on ROCm
+    models_affected: [NSA]
+
   # --- Communication issues ---
   - id: nccl_timeout
     pattern: "NCCL.*timeout|NCCL.*error"

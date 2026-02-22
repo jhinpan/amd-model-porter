@@ -142,6 +142,10 @@ class ErrorDiagnoser:
         return config.clone(env_overrides=env)
 
     @staticmethod
+    def _fix_set_nsa_tilelang(config: ServerConfig, _diag: Diagnosis) -> ServerConfig:
+        return config.clone(nsa_prefill_backend="tilelang", nsa_decode_backend="tilelang")
+
+    @staticmethod
     def _fix_escalate(config: ServerConfig, _diag: Diagnosis) -> ServerConfig:
         env = dict(config.env_overrides)
         env["__PORTER_ESCALATE_TO_AGENT"] = "1"
@@ -164,5 +168,6 @@ ErrorDiagnoser._fix_handlers = {
     "verify_triton_fallback": ErrorDiagnoser._fix_verify_triton_fallback,
     "fix_v_head_dim_init": ErrorDiagnoser._fix_v_head_dim_init,
     "upgrade_transformers": ErrorDiagnoser._fix_upgrade_transformers,
+    "set_nsa_tilelang": ErrorDiagnoser._fix_set_nsa_tilelang,
     "escalate_to_agent": ErrorDiagnoser._fix_escalate,
 }
