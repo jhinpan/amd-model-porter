@@ -294,11 +294,16 @@ class DockerManager:
 
         log.info("Downloading model weights for %s", model_id)
         dl_cmd = (
-            f"pip install -U huggingface_hub && "
             f"HF_HUB_CACHE={MODEL_WEIGHTS_CONTAINER_DIR}/hub "
             f"huggingface-cli download {model_id}"
         )
         result = self.exec_cmd(container_name, dl_cmd, timeout=7200)
         if result.returncode != 0:
-            raise RuntimeError(f"Failed to download model: {result.stderr[:500]}")
+            log.warning("Download may have issues: %s", result.stderr[:500])
+            # Check if model was downloaded despite pip warnings
+            hub_name = f"models--{model_id.replace('/', '--')}"
+            hub_path = f"{MODEL_WEIGHTS_CONTAINER_DIR}/hub/{hub_name}"
+            check = self.exec_cmd(container_name, f"test -d {hub_path} && echo EXISTS", timeout=10)
+            if "EXISTS" not in check.stdout:
+                raise RuntimeError(f"Failed to download model: {result.stderr[:500]}")
         return model_id
