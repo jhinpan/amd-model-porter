@@ -221,7 +221,7 @@ class DockerManager:
             if container_name:
                 check = self.exec_cmd(
                     container_name,
-                    "pgrep -f 'python.*sglang' > /dev/null && echo ALIVE || echo DEAD",
+                    "ps aux | grep '[p]ython.*sglang' | grep -v grep > /dev/null && echo ALIVE || echo DEAD",
                     timeout=5,
                 )
                 if "DEAD" in check.stdout:
