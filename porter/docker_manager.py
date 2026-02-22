@@ -164,7 +164,7 @@ class DockerManager:
         env_flags = ""
         if env:
             env_flags = " ".join(f"-e {k}={shlex.quote(v)}" for k, v in env.items())
-        bg_cmd = f"nohup {cmd} > /tmp/sglang_server.log 2>&1 &"
+        bg_cmd = f"nohup bash -c {shlex.quote(cmd)} > /tmp/sglang_server.log 2>&1 &"
         full = f"docker exec -d {env_flags} {name} bash -lc {shlex.quote(bg_cmd)}"
         return self._run(full, timeout=30, check=False)
 
@@ -189,7 +189,8 @@ class DockerManager:
 
         shell_cmd = config.build_shell_cmd()
         log.info("Launching SGLang: %s", config.summary())
-        self.exec_background(name, shell_cmd, env=config.build_env())
+        # build_shell_cmd() already includes env vars inline, so don't pass env separately
+        self.exec_background(name, shell_cmd)
         return self.wait_for_health(config.port)
 
     def wait_for_health(
