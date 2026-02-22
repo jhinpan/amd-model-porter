@@ -141,17 +141,35 @@ The server log is at /tmp/sglang_server.log.
             self.container, f"tmux kill-session -t {TMUX_SESSION} 2>/dev/null || true", timeout=10,
         )
 
-        escaped_prompt = prompt.replace("'", "'\\''")
-        agent_cmd = (
-            f"export ANTHROPIC_BASE_URL={ANTHROPIC_BASE_URL} && "
-            f"export ANTHROPIC_API_KEY=not-used && "
-            f"export CLAUDE_MODEL={CLAUDE_MODEL} && "
-            f"tmux new-session -d -s {TMUX_SESSION} "
-            f"'claude --dangerously-skip-permissions -p '\"'\"'{escaped_prompt}'\"'\"''"
+        # Write prompt to file to avoid shell quoting issues
+        prompt_escaped = prompt.replace("'", "'\\''")
+        self.docker.exec_cmd(
+            self.container,
+            f"cat > /tmp/porter_agent_prompt.txt << 'PORTER_EOF'\n{prompt}\nPORTER_EOF",
+            timeout=10,
+        )
+
+        agent_script = (
+            f"#!/bin/bash\n"
+            f"export ANTHROPIC_BASE_URL={ANTHROPIC_BASE_URL}\n"
+            f"export ANTHROPIC_API_KEY=not-used\n"
+            f"export CLAUDE_MODEL={CLAUDE_MODEL}\n"
+            f"claude --dangerously-skip-permissions -p \"$(cat /tmp/porter_agent_prompt.txt)\"\n"
+        )
+        agent_script_escaped = agent_script.replace("'", "'\\''")
+        self.docker.exec_cmd(
+            self.container,
+            f"echo '{agent_script_escaped}' > /tmp/porter_agent.sh && chmod +x /tmp/porter_agent.sh",
+            timeout=10,
+        )
+
+        self.docker.exec_cmd(
+            self.container,
+            f"tmux new-session -d -s {TMUX_SESSION} /tmp/porter_agent.sh",
+            timeout=10,
         )
 
         log.info("Launching Claude Code agent in tmux session '%s'", TMUX_SESSION)
-        self.docker.exec_cmd(self.container, agent_cmd, timeout=30)
 
     def _wait_for_resolution(self, timeout: int) -> bool:
         """Poll health endpoint until server is up or timeout."""

@@ -108,11 +108,16 @@ class Pipeline:
                 container_name, profile, result,
             )
 
+            if not working_config:
+                result.success = False
+                result.error = "Failed to launch SGLang server after all retry attempts"
+                self.db.update_job_status(result.job_id, "failed", error_log=result.error)
+                return result
+
             # Stage 3: Grid Search
-            if working_config:
-                self._stage3_grid_search(
-                    container_name, working_config, profile, result,
-                )
+            self._stage3_grid_search(
+                container_name, working_config, profile, result,
+            )
 
             # Stage 4: Results
             self._stage4_results(result)

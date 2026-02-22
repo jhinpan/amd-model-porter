@@ -73,7 +73,7 @@ DOCKER_RUN_DEFAULTS: dict[str, str | list[str]] = {
 # ---------------------------------------------------------------------------
 SGLANG_DEFAULT_PORT = 30000
 SGLANG_HEALTH_ENDPOINT = "/health"
-SGLANG_HEALTH_TIMEOUT = 300
+SGLANG_HEALTH_TIMEOUT = 600  # 10 min — large models (700B+) need time to load
 SGLANG_MAX_RETRIES = 5
 
 # ---------------------------------------------------------------------------
