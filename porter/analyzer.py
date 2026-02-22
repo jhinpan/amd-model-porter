@@ -120,6 +120,18 @@ class ModelAnalyzer:
     @staticmethod
     def _download_config(model_id: str) -> dict:
         """Download config.json from HuggingFace (no full model download)."""
+        import requests as _requests
+
+        # Try direct HTTP first (no auth needed for public models)
+        url = f"https://huggingface.co/{model_id}/resolve/main/config.json"
+        try:
+            r = _requests.get(url, timeout=30)
+            if r.status_code == 200:
+                return r.json()
+        except Exception:
+            pass
+
+        # Fall back to huggingface_hub
         try:
             path = hf_hub_download(model_id, "config.json")
             with open(path) as f:
