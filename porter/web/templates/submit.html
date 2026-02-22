@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Submit Model - AMD Model Porter{% endblock %}
+{% block content %}
+<section class="hero">
+    <h1>AMD Model Porter</h1>
+    <p>Automated model deployment and benchmarking on AMD MI355X GPUs</p>
+</section>
+
+<section class="submit-form">
+    <h2>Deploy a Model</h2>
+    <form hx-post="/submit" hx-target="#form-result">
+        <div class="form-group">
+            <label for="model_id">HuggingFace Model ID</label>
+            <input type="text" id="model_id" name="model_id"
+                   placeholder="e.g. zai-org/GLM-5-FP8 or MiniMaxAI/MiniMax-M2.5"
+                   required>
+        </div>
+        <button type="submit" class="btn-primary">Start Pipeline</button>
+    </form>
+    <div id="form-result"></div>
+</section>
+
+{% if jobs %}
+<section class="recent-jobs">
+    <h2>Recent Jobs</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Model</th>
+                <th>Status</th>
+                <th>Throughput</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.id }}</td>
+                <td>{{ job.model_id }}</td>
+                <td><span class="status-{{ job.status }}">{{ job.status }}</span></td>
+                <td>{{ "%.0f"|format(job.best_throughput) if job.best_throughput else "—" }} tok/s</td>
+                <td><a href="/job/{{ job.id }}">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+{% endblock %}

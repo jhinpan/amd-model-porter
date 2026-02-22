@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard - AMD Model Porter{% endblock %}
+{% block content %}
+<section class="leaderboard">
+    <h1>Model Leaderboard</h1>
+    <p>All models tested on AMD MI355X, ranked by weighted throughput score.</p>
+
+    {% if entries %}
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Model</th>
+                <th>Throughput Score</th>
+                <th>Best Config</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td class="rank">#{{ loop.index }}</td>
+                <td>{{ entry.model_id }}</td>
+                <td>{{ "%.0f"|format(entry.best_throughput) }}</td>
+                <td><code>{{ entry.best_config or "—" }}</code></td>
+                <td><a href="/results/{{ entry.job_id }}">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No completed models yet. <a href="/">Submit a model</a> to get started.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

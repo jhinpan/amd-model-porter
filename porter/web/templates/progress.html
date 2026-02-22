@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Job {{ job.id }} - AMD Model Porter{% endblock %}
+{% block content %}
+<section class="job-header">
+    <h1>Job #{{ job.id }}: {{ job.model_id }}</h1>
+    <span class="status-{{ job.status }}">{{ job.status }}</span>
+</section>
+
+<section class="progress-stages">
+    <div class="stage-indicators">
+        <div class="stage" id="stage-0">Stage 0: Analysis</div>
+        <div class="stage" id="stage-1">Stage 1: Docker</div>
+        <div class="stage" id="stage-2">Stage 2: Launch</div>
+        <div class="stage" id="stage-3">Stage 3: Benchmark</div>
+        <div class="stage" id="stage-4">Stage 4: Results</div>
+    </div>
+</section>
+
+<section class="log-stream">
+    <h2>Live Log</h2>
+    <div id="log-container" hx-ext="sse" sse-connect="/job/{{ job.id }}/stream" sse-swap="message">
+        <div id="log-entries"></div>
+    </div>
+</section>
+
+{% if job.status == 'completed' %}
+<div class="result-link">
+    <a href="/results/{{ job.id }}" class="btn-primary">View Full Results</a>
+</div>
+{% endif %}
+
+{% if benchmarks %}
+<section class="benchmark-preview">
+    <h2>Benchmark Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Config</th>
+                <th>Scenario</th>
+                <th>Throughput (tok/s)</th>
+                <th>TTFT (ms)</th>
+                <th>E2E (ms)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in benchmarks %}
+            <tr>
+                <td>{{ b.config_id }}</td>
+                <td>{{ b.scenario }}</td>
+                <td>{{ "%.0f"|format(b.total_throughput) }}</td>
+                <td>{{ "%.1f"|format(b.mean_ttft_ms) }}</td>
+                <td>{{ "%.0f"|format(b.mean_e2e_ms) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<script>
+document.body.addEventListener('sse:message', function(e) {
+    try {
+        const data = JSON.parse(e.detail.data);
+        const container = document.getElementById('log-entries');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry log-' + (data.level || 'info');
+        entry.innerHTML = '<span class="log-stage">[' + data.stage + ']</span> ' + data.message;
+        container.appendChild(entry);
+        container.scrollTop = container.scrollHeight;
+
+        // Highlight active stage
+        const stageMap = {'stage0': '0', 'stage1': '1', 'stage2': '2', 'stage3': '3', 'stage4': '4'};
+        const stageNum = stageMap[data.stage];
+        if (stageNum) {
+            document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById('stage-' + stageNum);
+            if (el) el.classList.add('active');
+        }
+
+        if (data.stage === 'done') {
+            setTimeout(() => location.reload(), 2000);
+        }
+    } catch(err) {}
+});
+</script>
+{% endblock %}

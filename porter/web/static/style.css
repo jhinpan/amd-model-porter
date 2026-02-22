@@ -1,0 +1,239 @@
+:root {
+    --amd-red: #ed1c24;
+    --amd-dark: #1a1a2e;
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface-hover: #252540;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --border: #333;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 2px solid var(--amd-red);
+}
+
+nav .logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--amd-red);
+    text-decoration: none;
+}
+
+.nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    margin-left: 1.5rem;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--amd-red); }
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--amd-red), #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p { color: var(--text-dim); font-size: 1.1rem; margin-top: 0.5rem; }
+
+/* Forms */
+.submit-form {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--amd-red);
+}
+
+.btn-primary {
+    background: var(--amd-red);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.btn-primary:hover { opacity: 0.9; }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    font-weight: 600;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+tr:hover { background: var(--surface-hover); }
+.row-error { opacity: 0.5; }
+
+/* Status badges */
+.status-pending { color: var(--text-dim); }
+.status-running { color: var(--warning); }
+.status-completed { color: var(--success); }
+.status-failed { color: var(--error); }
+
+/* Sections */
+section { margin-bottom: 2rem; }
+section h2 { margin-bottom: 1rem; font-size: 1.4rem; }
+
+/* Stage indicators */
+.stage-indicators {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.stage {
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+}
+
+.stage.active {
+    border-color: var(--amd-red);
+    background: rgba(237, 28, 36, 0.15);
+    color: var(--amd-red);
+    font-weight: 600;
+}
+
+/* Log stream */
+#log-container {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+}
+
+.log-entry {
+    padding: 2px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.log-stage { color: var(--amd-red); font-weight: 600; }
+.log-error { color: var(--error); }
+.log-warning { color: var(--warning); }
+
+/* Config card */
+.config-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-left: 4px solid var(--amd-red);
+}
+
+.metric-row { display: flex; gap: 2rem; flex-wrap: wrap; }
+
+.metric {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--amd-red);
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+/* Docker command */
+.docker-cmd pre {
+    background: var(--surface);
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+}
+
+/* Leaderboard */
+.rank { font-weight: 700; color: var(--amd-red); }
+.empty-state { text-align: center; padding: 3rem; color: var(--text-dim); }
+.empty-state a { color: var(--amd-red); }
+.result-link { text-align: center; margin: 2rem 0; }
+
+a { color: var(--amd-red); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85em; }

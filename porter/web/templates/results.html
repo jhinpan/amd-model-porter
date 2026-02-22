@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Results: {{ job.model_id }} - AMD Model Porter{% endblock %}
+{% block content %}
+<section class="results-header">
+    <h1>Results: {{ job.model_id }}</h1>
+    <span class="status-{{ job.status }}">{{ job.status }}</span>
+</section>
+
+{% if job.best_config %}
+<section class="best-config">
+    <h2>Best Configuration</h2>
+    <div class="config-card">
+        <div class="metric-row">
+            <div class="metric">
+                <span class="metric-value">{{ "%.0f"|format(job.best_throughput) }}</span>
+                <span class="metric-label">Weighted Score</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">{{ job.best_config }}</span>
+                <span class="metric-label">Config</span>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if job.docker_run_cmd %}
+<section class="docker-cmd">
+    <h2>Docker Run Command</h2>
+    <pre><code>{{ job.docker_run_cmd }}</code></pre>
+</section>
+{% endif %}
+
+{% if benchmarks %}
+<section class="benchmark-results">
+    <h2>All Benchmark Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Config</th>
+                <th>Scenario</th>
+                <th>Total tok/s</th>
+                <th>Output tok/s</th>
+                <th>TTFT (ms)</th>
+                <th>E2E (ms)</th>
+                <th>ITL (ms)</th>
+                <th>Completed</th>
+                <th>Failed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in benchmarks %}
+            <tr {% if b.error %}class="row-error"{% endif %}>
+                <td>{{ b.config_id }}</td>
+                <td>{{ b.scenario }}</td>
+                <td>{{ "%.0f"|format(b.total_throughput) }}</td>
+                <td>{{ "%.0f"|format(b.output_throughput) }}</td>
+                <td>{{ "%.1f"|format(b.mean_ttft_ms) }}</td>
+                <td>{{ "%.0f"|format(b.mean_e2e_ms) }}</td>
+                <td>{{ "%.1f"|format(b.mean_itl_ms) }}</td>
+                <td>{{ b.num_completed }}</td>
+                <td>{{ b.num_failed }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="benchmark-chart">
+    <h2>Throughput Comparison</h2>
+    <canvas id="throughputChart" height="300"></canvas>
+</section>
+
+<script>
+const benchmarks = {{ benchmarks | tojson }};
+const throughputData = benchmarks.filter(b => b.scenario === 'throughput' && b.total_throughput > 0);
+if (throughputData.length > 0) {
+    new Chart(document.getElementById('throughputChart'), {
+        type: 'bar',
+        data: {
+            labels: throughputData.map(b => b.config_id),
+            datasets: [{
+                label: 'Total Throughput (tok/s)',
+                data: throughputData.map(b => b.total_throughput),
+                backgroundColor: 'rgba(237, 28, 36, 0.7)',
+                borderColor: 'rgba(237, 28, 36, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'tok/s' } } }
+        }
+    });
+}
+</script>
+{% endif %}
+{% endblock %}
